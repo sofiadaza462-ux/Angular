@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import os
 
@@ -44,7 +45,7 @@ def guardar_todo(datos):
 
 
 # ==============================================================================
-# VALIDACIONES DE ENTRADA
+# VALIDACIONES DE ENTRADA Y FORMATOS
 # ==============================================================================
 def leer_texto(mensaje):
     """Solicita un texto no vacío."""
@@ -55,12 +56,38 @@ def leer_texto(mensaje):
         print("Error: El campo no puede estar vacío. Intente de nuevo.")
 
 
-def leer_numero_positivo(mensaje, es_entero=False):
-    """Solicita un número mayor a cero."""
+def leer_entero_positivo(mensaje):
+    """Solicita un entero estricto mayor a cero (sin decimales)."""
     while True:
         valor = input(mensaje).strip()
         try:
-            num = int(valor) if es_entero else float(valor)
+            num = int(valor)
+            if num > 0:
+                return num
+            print("Error: Debe ingresar un valor entero mayor a 0.")
+        except ValueError:
+            print("Error: Ingrese un valor entero válido (sin decimales).")
+
+
+def leer_entero_no_negativo(mensaje):
+    """Solicita un entero estricto mayor o igual a cero (sin decimales)."""
+    while True:
+        valor = input(mensaje).strip()
+        try:
+            num = int(valor)
+            if num >= 0:
+                return num
+            print("Error: El valor no puede ser negativo.")
+        except ValueError:
+            print("Error: Ingrese un valor entero válido (sin decimales).")
+
+
+def leer_numero_positivo(mensaje):
+    """Solicita un número (float o int) positivo."""
+    while True:
+        valor = input(mensaje).strip()
+        try:
+            num = float(valor)
             if num > 0:
                 return num
             print("Error: Debe ingresar un valor mayor a 0.")
@@ -68,24 +95,40 @@ def leer_numero_positivo(mensaje, es_entero=False):
             print("Error: Por favor ingrese un número válido.")
 
 
-def leer_numero_no_negativo(mensaje, es_entero=False):
-    """Solicita un número mayor o igual a cero."""
+def leer_fecha_ddmmyyyy(mensaje):
+    """Solicita una fecha con el formato estricto dd/mm/aaaa."""
     while True:
-        valor = input(mensaje).strip()
+        fecha_str = input(mensaje).strip()
         try:
-            num = int(valor) if es_entero else float(valor)
-            if num >= 0:
-                return num
-            print("Error: El valor no puede ser negativo.")
+            fecha_dt = datetime.strptime(fecha_str, "%d/%m/%Y")
+            return fecha_dt.strftime("%d/%m/%Y")
         except ValueError:
-            print("Error: Por favor ingrese un número válido.")
+            print("Error: La fecha debe tener el formato dd/mm/aaaa (ejemplo: 15/08/2026).")
+
+
+def generar_id_secuencial(coleccion, prefijo, campo_id):
+    """Genera IDs secuenciales tipo M0001 o V0001 o L001."""
+    if not coleccion:
+        return f"{prefijo}001"
+    
+    max_num = 0
+    for item in coleccion:
+        id_str = item.get(campo_id, "")
+        if id_str.startswith(prefijo):
+            try:
+                num = int(id_str[len(prefijo):])
+                if num > max_num:
+                    max_num = num
+            except ValueError:
+                continue
+    return f"{prefijo}{max_num + 1:03d}"
 
 
 # ==============================================================================
 # MÓDULO: GESTIÓN DE PRODUCTOS
 # ==============================================================================
 def buscar_producto_por_codigo(productos, codigo):
-    """Busca un producto por su código (exacto)."""
+    """Busca un producto por su código (exacto en mayúsculas)."""
     codigo_upper = codigo.upper()
     for prod in productos:
         if prod["codigo"].upper() == codigo_upper:
@@ -94,7 +137,7 @@ def buscar_producto_por_codigo(productos, codigo):
 
 
 def registrar_producto(productos):
-    """RF01: Registrar un nuevo producto con código único y validaciones."""
+    """RF01: Registrar un nuevo producto con código único, precio entero y stock mínimo sin decimales."""
     print("\n--- Registrar Nuevo Producto ---")
     
     while True:
@@ -107,8 +150,8 @@ def registrar_producto(productos):
     nombre = leer_texto("Ingrese el nombre del producto: ")
     categoria = leer_texto("Ingrese la categoría (ej. Hortalizas, Frutas): ")
     unidad = leer_texto("Ingrese la unidad de medida (ej. kg, unidad, manojo): ")
-    precio = leer_numero_positivo("Ingrese el precio unitario (> 0): ")
-    stock_minimo = leer_numero_no_negativo("Ingrese el stock mínimo (>= 0): ", es_entero=True)
+    precio = leer_entero_positivo("Ingrese el precio unitario entero (> 0, sin decimales): ")
+    stock_minimo = leer_entero_no_negativo("Ingrese el stock mínimo (>= 0, sin decimales): ")
 
     nuevo_producto = {
         "codigo": codigo,
@@ -160,14 +203,15 @@ def listar_productos(productos):
         print("\nNo se encontraron productos con los criterios especificados.")
         return
 
-    print("\n" + "="*80)
-    print(f"{'CÓDIGO':<8} | {'NOMBRE':<22} | {'CATEGORÍA':<15} | {'UNIDAD':<8} | {'PRECIO':<10} | {'MÍN.':<5} | {'ESTADO'}")
-    print("="*80)
+    print("\n" + "="*85)
+    print(f"{'CÓDIGO':<8} | {'NOMBRE':<22} | {'CATEGORÍA':<15} | {'UNIDAD':<8} | {'PRECIO':<12} | {'MÍNIMO':<8} | {'ESTADO'}")
+    print("="*85)
     for p in resultados:
         estado = "Activo" if p.get("activo", True) else "Inactivo"
-        precio_fmt = f"${p['precio']:,.0f}"
-        print(f"{p['codigo']:<8} | {p['nombre']:<22} | {p['categoria']:<15} | {p['unidad']:<8} | {precio_fmt:<10} | {p['stock_minimo']:<5} | {estado}")
-    print("="*80)
+        precio_fmt = f"${p['precio']:,}".replace(",", ".")
+        stock_min_fmt = f"{p['stock_minimo']:,}".replace(",", ".")
+        print(f"{p['codigo']:<8} | {p['nombre']:<22} | {p['categoria']:<15} | {p['unidad']:<8} | {precio_fmt:<12} | {stock_min_fmt:<8} | {estado}")
+    print("="*85)
 
 
 def actualizar_producto(productos):
@@ -195,27 +239,27 @@ def actualizar_producto(productos):
     if nueva_unidad:
         producto["unidad"] = nueva_unidad
 
-    nuevo_precio = input(f"Precio actual [{producto['precio']}]: ").strip()
+    nuevo_precio = input(f"Precio actual [${producto['precio']:,}]: ").strip().replace(".", "")
     if nuevo_precio:
         try:
-            val = float(nuevo_precio)
+            val = int(nuevo_precio)
             if val > 0:
                 producto["precio"] = val
             else:
-                print("Precio inválido. Se conserva el valor anterior.")
+                print("Precio inválido. Debe ser un entero positivo.")
         except ValueError:
-            print("Entrada no numérica. Se conserva el valor anterior.")
+            print("Entrada inválida. Debe ser un número entero.")
 
-    nuevo_stock_min = input(f"Stock mínimo actual [{producto['stock_minimo']}]: ").strip()
+    nuevo_stock_min = input(f"Stock mínimo actual [{producto['stock_minimo']:,}]: ").strip().replace(".", "")
     if nuevo_stock_min:
         try:
             val = int(nuevo_stock_min)
             if val >= 0:
                 producto["stock_minimo"] = val
             else:
-                print("Stock mínimo inválido. Se conserva el valor anterior.")
+                print("Stock mínimo inválido. Debe ser mayor o igual a 0.")
         except ValueError:
-            print("Entrada no numérica. Se conserva el valor anterior.")
+            print("Entrada inválida. Debe ser un número entero.")
 
     guardar_datos_json(RUTAS_ARCHIVOS["productos"], productos)
     print(f"\n[✓] Producto '{codigo}' actualizado exitosamente.")
@@ -270,6 +314,169 @@ def menu_productos(productos):
 
 
 # ==============================================================================
+# MÓDULO: GESTIÓN DE LOTES PRODUCTIVOS
+# ==============================================================================
+def buscar_lote_por_id(lotes, id_lote):
+    """Busca un lote por su id_lote (exacto en mayúsculas)."""
+    id_upper = id_lote.upper()
+    for lote in lotes:
+        if lote["id_lote"].upper() == id_upper:
+            return lote
+    return None
+
+
+def registrar_lote(datos):
+    """RF05: Registrar lote asociado únicamente a productos existentes y activos."""
+    print("\n--- Registrar Lote Productivo ---")
+    
+    id_lote = generar_id_secuencial(datos["lotes"], "L", "id_lote")
+    print(f"ID del nuevo lote asignado automáticamente: {id_lote}")
+
+    codigo_prod = leer_texto("Ingrese el código del producto asociado: ").upper()
+    prod = buscar_producto_por_codigo(datos["productos"], codigo_prod)
+
+    if not prod:
+        print(f"Error: No existe el producto con código '{codigo_prod}'.")
+        return
+
+    if not prod.get("activo", True):
+        print(f"Error: El producto '{codigo_prod}' está desactivado. No se pueden crear nuevos lotes.")
+        return
+
+    fecha_siembra = leer_fecha_ddmmyyyy("Ingrese la fecha de siembra (dd/mm/aaaa): ")
+    area_m2 = leer_numero_positivo("Ingrese el área en m² (> 0): ")
+
+    nuevo_lote = {
+        "id_lote": id_lote,
+        "producto_codigo": codigo_prod,
+        "fecha_siembra": fecha_siembra,
+        "area_m2": area_m2,
+        "cantidad_producida": 0,
+        "estado": "EN_PRODUCCION"
+    }
+
+    datos["lotes"].append(nuevo_lote)
+    guardar_datos_json(RUTAS_ARCHIVOS["lotes"], datos["lotes"])
+    print(f"\n[✓] Lote '{id_lote}' para el producto '{prod['nombre']}' registrado exitosamente.")
+
+
+def cosechar_lote(datos):
+    """RF07 y Regla 5: Cosechar lote, ingresar cantidad y generar movimiento automático de inventario."""
+    print("\n--- Cosechar Lote Productivo ---")
+    id_lote = input("Ingrese el ID del lote a cosechar (ej. L001): ").strip().upper()
+    lote = buscar_lote_por_id(datos["lotes"], id_lote)
+
+    if not lote:
+        print(f"Error (PF003): El lote '{id_lote}' no existe.")
+        return
+
+    if lote["estado"] == "COSECHADO":
+        print(f"Error (PF004): El lote '{id_lote}' ya fue cosechado previamente. No se permite doble cosecha.")
+        return
+
+    if lote["estado"] == "CANCELADO":
+        print(f"Error: El lote '{id_lote}' está CANCELADO y no se puede cosechar.")
+        return
+
+    cantidad = leer_entero_positivo("Ingrese la cantidad producida cosechada (entero > 0): ")
+    fecha_cosecha = datetime.now().strftime("%d/%m/%Y %H:%M")
+
+    # Actualizar estado del lote
+    lote["cantidad_producida"] = cantidad
+    lote["estado"] = "COSECHADO"
+
+    # Generar automáticamente movimiento de entrada en inventario
+    id_mov = generar_id_secuencial(datos["movimientos"], "M", "id")
+    nuevo_movimiento = {
+        "id": id_mov,
+        "producto_codigo": lote["producto_codigo"],
+        "tipo": "ENTRADA",
+        "cantidad": cantidad,
+        "motivo": f"Cosecha lote {id_lote}",
+        "fecha": fecha_cosecha
+    }
+
+    datos["movimientos"].append(nuevo_movimiento)
+    
+    guardar_datos_json(RUTAS_ARCHIVOS["lotes"], datos["lotes"])
+    guardar_datos_json(RUTAS_ARCHIVOS["movimientos"], datos["movimientos"])
+    
+    print(f"\n[✓] Lote '{id_lote}' cosechado exitosamente.")
+    print(f"[✓] Se generó automáticamente la entrada de inventario {id_mov} por {cantidad:,} unidades.")
+
+
+def cambiar_estado_lote(lotes):
+    """RF06: Cambiar estado del lote a EN_PRODUCCION o CANCELADO (la cosecha tiene su propia opción)."""
+    print("\n--- Cambiar Estado de Lote ---")
+    id_lote = input("Ingrese el ID del lote: ").strip().upper()
+    lote = buscar_lote_por_id(lotes, id_lote)
+
+    if not lote:
+        print(f"Error: El lote '{id_lote}' no existe.")
+        return
+
+    print(f"Estado actual del lote '{id_lote}': {lote['estado']}")
+    if lote["estado"] == "COSECHADO":
+        print("Atención: Un lote COSECHADO no se puede cambiar a otros estados.")
+        return
+
+    print("Estados disponibles: [1] EN_PRODUCCION  [2] CANCELADO")
+    opc = input("Seleccione nuevo estado: ").strip()
+
+    if opc == "1":
+        lote["estado"] = "EN_PRODUCCION"
+    elif opc == "2":
+        lote["estado"] = "CANCELADO"
+    else:
+        print("Opción inválida. Operación cancelada.")
+        return
+
+    guardar_datos_json(RUTAS_ARCHIVOS["lotes"], lotes)
+    print(f"\n[✓] Estado del lote '{id_lote}' cambiado a '{lote['estado']}'.")
+
+
+def listar_lotes(lotes):
+    """Listar todos los lotes registrados."""
+    if not lotes:
+        print("\nNo hay lotes registrados.")
+        return
+
+    print("\n" + "="*75)
+    print(f"{'ID LOTE':<8} | {'PROD. CÓD':<10} | {'FECHA SIEMBRA':<14} | {'ÁREA (m²)':<10} | {'CANT.':<8} | {'ESTADO'}")
+    print("="*75)
+    for l in lotes:
+        cant_fmt = f"{l['cantidad_producida']:,}".replace(",", ".")
+        area_fmt = f"{l['area_m2']:,.1f}"
+        print(f"{l['id_lote']:<8} | {l['producto_codigo']:<10} | {l['fecha_siembra']:<14} | {area_fmt:<10} | {cant_fmt:<8} | {l['estado']}")
+    print("="*75)
+
+
+def menu_lotes(datos):
+    """Submenú interactivo para el módulo de lotes."""
+    while True:
+        print("\n----- MÓDULO DE LOTES PRODUCTIVOS -----")
+        print("1. Registrar lote")
+        print("2. Cosechar lote")
+        print("3. Cambiar estado de lote")
+        print("4. Listar lotes")
+        print("0. Volver al menú principal")
+        opcion = input("Seleccione una opción: ").strip()
+
+        if opcion == "1":
+            registrar_lote(datos)
+        elif opcion == "2":
+            cosechar_lote(datos)
+        elif opcion == "3":
+            cambiar_estado_lote(datos["lotes"])
+        elif opcion == "4":
+            listar_lotes(datos["lotes"])
+        elif opcion == "0":
+            break
+        else:
+            print("Opción inválida. Intente de nuevo.")
+
+
+# ==============================================================================
 # MENÚ PRINCIPAL Y CONTROL DE FLUJO
 # ==============================================================================
 def mostrar_menu():
@@ -302,7 +509,7 @@ def main():
         if opcion == "1":
             menu_productos(datos["productos"])
         elif opcion == "2":
-            print("\n[Módulo en construcción: Gestión de lotes productivos]")
+            menu_lotes(datos)
         elif opcion == "3":
             print("\n[Módulo en construcción: Movimientos de inventario]")
         elif opcion == "4":
