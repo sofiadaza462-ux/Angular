@@ -329,20 +329,21 @@ def buscar_lote_por_id(lotes, id_lote):
 def registrar_lote(datos):
     """RF05: Registrar lote asociado únicamente a productos existentes y activos."""
     print("\n--- Registrar Lote Productivo ---")
-    
-    id_lote = generar_id_secuencial(datos["lotes"], "L", "id_lote")
-    print(f"ID del nuevo lote asignado automáticamente: {id_lote}")
 
     codigo_prod = leer_texto("Ingrese el código del producto asociado: ").upper()
     prod = buscar_producto_por_codigo(datos["productos"], codigo_prod)
 
+    # Validaciones obligatorias de RF05
     if not prod:
-        print(f"Error: No existe el producto con código '{codigo_prod}'.")
+        print(f"Error: El producto con código '{codigo_prod}' no existe en el sistema.")
         return
 
     if not prod.get("activo", True):
-        print(f"Error: El producto '{codigo_prod}' está desactivado. No se pueden crear nuevos lotes.")
+        print(f"Error: El producto '{prod['nombre']}' ({codigo_prod}) se encuentra DESACTIVADO. No se pueden registrar nuevos lotes.")
         return
+
+    id_lote = generar_id_secuencial(datos["lotes"], "L", "id_lote")
+    print(f"ID asignado al lote: {id_lote}")
 
     fecha_siembra = leer_fecha_ddmmyyyy("Ingrese la fecha de siembra (dd/mm/aaaa): ")
     area_m2 = leer_numero_positivo("Ingrese el área en m² (> 0): ")
@@ -358,11 +359,11 @@ def registrar_lote(datos):
 
     datos["lotes"].append(nuevo_lote)
     guardar_datos_json(RUTAS_ARCHIVOS["lotes"], datos["lotes"])
-    print(f"\n[✓] Lote '{id_lote}' para el producto '{prod['nombre']}' registrado exitosamente.")
+    print(f"\n[✓] Lote '{id_lote}' para el producto activo '{prod['nombre']}' registrado exitosamente.")
 
 
 def cosechar_lote(datos):
-    """RF07 y Regla 5: Cosechar lote, ingresar cantidad y generar movimiento automático de inventario."""
+    """RF07 y Regla 5: Cosechar lote, ingresar cantidad y generar movimiento automático de entrada en inventario."""
     print("\n--- Cosechar Lote Productivo ---")
     id_lote = input("Ingrese el ID del lote a cosechar (ej. L001): ").strip().upper()
     lote = buscar_lote_por_id(datos["lotes"], id_lote)
@@ -407,7 +408,7 @@ def cosechar_lote(datos):
 
 
 def cambiar_estado_lote(lotes):
-    """RF06: Cambiar estado del lote a EN_PRODUCCION o CANCELADO (la cosecha tiene su propia opción)."""
+    """RF06: Cambiar estado del lote a EN_PRODUCCION o CANCELADO."""
     print("\n--- Cambiar Estado de Lote ---")
     id_lote = input("Ingrese el ID del lote: ").strip().upper()
     lote = buscar_lote_por_id(lotes, id_lote)
@@ -475,7 +476,6 @@ def menu_lotes(datos):
             break
         else:
             print("Opción inválida. Intente de nuevo.")
-
 
 # ==============================================================================
 # MENÚ PRINCIPAL Y CONTROL DE FLUJO
