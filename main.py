@@ -83,7 +83,7 @@ def leer_entero_no_negativo(mensaje):
 
 
 def leer_numero_positivo(mensaje):
-    """Solicita un número (float o int) positivo."""
+    """Solicita un número positivo (float o int)."""
     while True:
         valor = input(mensaje).strip()
         try:
@@ -107,7 +107,7 @@ def leer_fecha_ddmmyyyy(mensaje):
 
 
 def generar_id_secuencial(coleccion, prefijo, campo_id):
-    """Genera IDs secuenciales tipo M0001 o V0001 o L001."""
+    """Genera IDs secuenciales tipo M0001, V0001 o L001."""
     if not coleccion:
         return f"{prefijo}001"
     
@@ -122,6 +122,17 @@ def generar_id_secuencial(coleccion, prefijo, campo_id):
             except ValueError:
                 continue
     return f"{prefijo}{max_num + 1:03d}"
+
+
+# ==============================================================================
+# CÁLCULO DE STOCK (REGLA DE NEGOCIO 3)
+# ==============================================================================
+def calcular_stock_producto(movimientos, codigo_producto):
+    """Calcula el stock actual a partir de la suma de entradas y resta de salidas."""
+    codigo_upper = codigo_producto.upper()
+    entradas = sum(m["cantidad"] for m in movimientos if m["producto_codigo"].upper() == codigo_upper and m["tipo"] == "ENTRADA")
+    salidas = sum(m["cantidad"] for m in movimientos if m["producto_codigo"].upper() == codigo_upper and m["tipo"] == "SALIDA")
+    return entradas - salidas
 
 
 # ==============================================================================
@@ -148,10 +159,10 @@ def registrar_producto(productos):
             break
 
     nombre = leer_texto("Ingrese el nombre del producto: ")
-    categoria = leer_texto("Ingrese la categoría: ")
-    unidad = leer_texto("Ingrese la unidad de medida: ")
-    precio = leer_entero_positivo("Ingrese el precio unitario entero: ")
-    stock_minimo = leer_entero_no_negativo("Ingrese el stock mínimo : ")
+    categoria = leer_texto("Ingrese la categoría (ej. Hortalizas, Frutas): ")
+    unidad = leer_texto("Ingrese la unidad de medida (ej. kg, unidad, manojo): ")
+    precio = leer_entero_positivo("Ingrese el precio unitario entero (> 0, sin decimales): ")
+    stock_minimo = leer_entero_no_negativo("Ingrese el stock mínimo (>= 0, sin decimales): ")
 
     nuevo_producto = {
         "codigo": codigo,
@@ -165,12 +176,14 @@ def registrar_producto(productos):
 
     productos.append(nuevo_producto)
     guardar_datos_json(RUTAS_ARCHIVOS["productos"], productos)
-    print(f"\n Producto registrado correctamente.")
+    print(f"\n[✓] Producto '{nombre}' ({codigo}) registrado correctamente.")
 
 
+def listar_productos(datos):
+    """RF02: Listar productos activos o buscar por código / parte del nombre con stock calculado."""
+    productos = datos["productos"]
+    movimientos = datos["movimientos"]
 
-def listar_productos(productos):
-    """RF02: Listar productos activos o buscar por código / parte del nombre."""
     if not productos:
         print("\nNo hay productos registrados en el sistema.")
         return
@@ -185,7 +198,7 @@ def listar_productos(productos):
     solo_activos = True
 
     if opcion == "2":
-        filtro = input("Ingrese el codigo o el nombre: ").strip().lower()
+        filtro = input("Ingrese texto a buscar (código o parte del nombre): ").strip().lower()
     elif opcion == "3":
         solo_activos = False
 
@@ -204,15 +217,17 @@ def listar_productos(productos):
         print("\nNo se encontraron productos con los criterios especificados.")
         return
 
-    print("\n" + "="*85)
-    print(f"{'CÓDIGO':<8} | {'NOMBRE':<22} | {'CATEGORÍA':<15} | {'UNIDAD':<8} | {'PRECIO':<12} | {'MÍNIMO':<8} | {'ESTADO'}")
-    print("="*85)
+    print("\n" + "="*95)
+    print(f"{'CÓDIGO':<8} | {'NOMBRE':<20} | {'CATEGORÍA':<13} | {'PRECIO':<10} | {'STOCK ACT.':<10} | {'MÍN.':<6} | {'ESTADO'}")
+    print("="*95)
     for p in resultados:
         estado = "Activo" if p.get("activo", True) else "Inactivo"
         precio_fmt = f"${p['precio']:,}".replace(",", ".")
+        stock_actual = calcular_stock_producto(movimientos, p["codigo"])
+        stock_act_fmt = f"{stock_actual:,}".replace(",", ".")
         stock_min_fmt = f"{p['stock_minimo']:,}".replace(",", ".")
-        print(f"{p['codigo']:<8} | {p['nombre']:<22} | {p['categoria']:<15} | {p['unidad']:<8} | {precio_fmt:<12} | {stock_min_fmt:<8} | {estado}")
-    print("="*85)
+        print(f"{p['codigo']:<8} | {p['nombre']:<20} | {p['categoria']:<13} | {precio_fmt:<10} | {stock_act_fmt:<10} | {stock_min_fmt:<6} | {estado}")
+    print("="*95)
 
 
 def actualizar_producto(productos):
@@ -289,7 +304,7 @@ def desactivar_producto(productos):
         print("\nOperación cancelada.")
 
 
-def menu_productos(productos):
+def menu_productos(datos):
     """Submenú interactivo para el módulo de gestión de productos."""
     while True:
         print("\n----- MÓDULO DE PRODUCTOS -----")
@@ -301,13 +316,13 @@ def menu_productos(productos):
         opcion = input("Seleccione una opción: ").strip()
 
         if opcion == "1":
-            registrar_producto(productos)
+            registrar_producto(datos["productos"])
         elif opcion == "2":
-            listar_productos(productos)
+            listar_productos(datos)
         elif opcion == "3":
-            actualizar_producto(productos)
+            actualizar_producto(datos["productos"])
         elif opcion == "4":
-            desactivar_producto(productos)
+            desactivar_producto(datos["productos"])
         elif opcion == "0":
             break
         else:
@@ -329,11 +344,10 @@ def buscar_lote_por_id(lotes, id_lote):
 def registrar_lote(datos):
     """RF05: Registrar lote asociado únicamente a productos existentes y activos."""
     print("\n--- Registrar Lote Productivo ---")
-
+    
     codigo_prod = leer_texto("Ingrese el código del producto asociado: ").upper()
     prod = buscar_producto_por_codigo(datos["productos"], codigo_prod)
 
-    # Validaciones obligatorias de RF05
     if not prod:
         print(f"Error: El producto con código '{codigo_prod}' no existe en el sistema.")
         return
@@ -363,7 +377,7 @@ def registrar_lote(datos):
 
 
 def cosechar_lote(datos):
-    """RF07 y Regla 5: Cosechar lote, ingresar cantidad y generar movimiento automático de entrada en inventario."""
+    """RF07 y Regla 5: Cosechar lote, ingresar cantidad y generar movimiento automático de entrada."""
     print("\n--- Cosechar Lote Productivo ---")
     id_lote = input("Ingrese el ID del lote a cosechar (ej. L001): ").strip().upper()
     lote = buscar_lote_por_id(datos["lotes"], id_lote)
@@ -477,6 +491,120 @@ def menu_lotes(datos):
         else:
             print("Opción inválida. Intente de nuevo.")
 
+
+# ==============================================================================
+# MÓDULO: MOVIMIENTOS DE INVENTARIO (ETAPA 5)
+# ==============================================================================
+def registrar_entrada_inventario(datos):
+    """RF08: Registrar entradas manuales de inventario con motivo obligatorio."""
+    print("\n--- Registrar Entrada Manual de Inventario ---")
+    codigo_prod = leer_texto("Ingrese el código del producto: ").upper()
+    prod = buscar_producto_por_codigo(datos["productos"], codigo_prod)
+
+    if not prod:
+        print(f"Error: El producto '{codigo_prod}' no existe.")
+        return
+
+    if not prod.get("activo", True):
+        print(f"Error: El producto '{prod['nombre']}' está deshabilitado/inactivo.")
+        return
+
+    cantidad = leer_entero_positivo("Ingrese la cantidad a ingresar (entero > 0): ")
+    motivo = leer_texto("Ingrese el motivo obligatorio de la entrada: ")
+    fecha_mov = datetime.now().strftime("%d/%m/%Y %H:%M")
+
+    id_mov = generar_id_secuencial(datos["movimientos"], "M", "id")
+
+    nuevo_movimiento = {
+        "id": id_mov,
+        "producto_codigo": codigo_prod,
+        "tipo": "ENTRADA",
+        "cantidad": cantidad,
+        "motivo": motivo,
+        "fecha": fecha_mov
+    }
+
+    datos["movimientos"].append(nuevo_movimiento)
+    guardar_datos_json(RUTAS_ARCHIVOS["movimientos"], datos["movimientos"])
+    print(f"\n[✓] Entrada {id_mov} registrada correctamente para '{prod['nombre']}'.")
+
+
+def registrar_salida_inventario(datos):
+    """RF09 y Regla 4: Registrar salidas manuales solo si existe stock suficiente (PF005)."""
+    print("\n--- Registrar Salida Manual de Inventario ---")
+    codigo_prod = leer_texto("Ingrese el código del producto: ").upper()
+    prod = buscar_producto_por_codigo(datos["productos"], codigo_prod)
+
+    if not prod:
+        print(f"Error: El producto '{codigo_prod}' no existe.")
+        return
+
+    stock_disponible = calcular_stock_producto(datos["movimientos"], codigo_prod)
+    print(f"Stock actual disponible para '{prod['nombre']}': {stock_disponible:,} unidades.")
+
+    cantidad = leer_entero_positivo("Ingrese la cantidad a retirar (entero > 0): ")
+
+    # Validación estricta RF09 / PF005
+    if cantidad > stock_disponible:
+        print(f"Error (PF005): Operación denegada. El stock disponible ({stock_disponible:,}) es insuficiente para retirar {cantidad:,} unidades.")
+        return
+
+    motivo = leer_texto("Ingrese el motivo obligatorio de la salida: ")
+    fecha_mov = datetime.now().strftime("%d/%m/%Y %H:%M")
+
+    id_mov = generar_id_secuencial(datos["movimientos"], "M", "id")
+
+    nuevo_movimiento = {
+        "id": id_mov,
+        "producto_codigo": codigo_prod,
+        "tipo": "SALIDA",
+        "cantidad": cantidad,
+        "motivo": motivo,
+        "fecha": fecha_mov
+    }
+
+    datos["movimientos"].append(nuevo_movimiento)
+    guardar_datos_json(RUTAS_ARCHIVOS["movimientos"], datos["movimientos"])
+    print(f"\n[✓] Salida {id_mov} registrada correctamente para '{prod['nombre']}'. Nuevo stock: {stock_disponible - cantidad:,}.")
+
+
+def listar_movimientos(movimientos):
+    """Listar el historial completo de movimientos de inventario."""
+    if not movimientos:
+        print("\nNo existen movimientos de inventario registrados.")
+        return
+
+    print("\n" + "="*85)
+    print(f"{'ID':<7} | {'PROD. CÓD':<10} | {'TIPO':<8} | {'CANTIDAD':<10} | {'FECHA':<16} | {'MOTIVO'}")
+    print("="*85)
+    for m in movimientos:
+        cant_fmt = f"{m['cantidad']:,}".replace(",", ".")
+        print(f"{m['id']:<7} | {m['producto_codigo']:<10} | {m['tipo']:<8} | {cant_fmt:<10} | {m['fecha']:<16} | {m['motivo']}")
+    print("="*85)
+
+
+def menu_inventario(datos):
+    """Submenú interactivo para movimientos de inventario."""
+    while True:
+        print("\n----- MÓDULO DE MOVIMIENTOS DE INVENTARIO -----")
+        print("1. Registrar entrada manual")
+        print("2. Registrar salida manual")
+        print("3. Consultar historial de movimientos")
+        print("0. Volver al menú principal")
+        opcion = input("Seleccione una opción: ").strip()
+
+        if opcion == "1":
+            registrar_entrada_inventario(datos)
+        elif opcion == "2":
+            registrar_salida_inventario(datos)
+        elif opcion == "3":
+            listar_movimientos(datos["movimientos"])
+        elif opcion == "0":
+            break
+        else:
+            print("Opción inválida. Intente de nuevo.")
+
+
 # ==============================================================================
 # MENÚ PRINCIPAL Y CONTROL DE FLUJO
 # ==============================================================================
@@ -508,11 +636,11 @@ def main():
         opcion = input("Seleccione una opción: ").strip()
 
         if opcion == "1":
-            menu_productos(datos["productos"])
+            menu_productos(datos)
         elif opcion == "2":
             menu_lotes(datos)
         elif opcion == "3":
-            print("\n[Módulo en construcción: Movimientos de inventario]")
+            menu_inventario(datos)
         elif opcion == "4":
             print("\n[Módulo en construcción: Registrar venta]")
         elif opcion == "5":
