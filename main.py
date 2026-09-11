@@ -148,10 +148,10 @@ def registrar_producto(productos):
             break
 
     nombre = leer_texto("Ingrese el nombre del producto: ")
-    categoria = leer_texto("Ingrese la categoría (ej. Hortalizas, Frutas): ")
-    unidad = leer_texto("Ingrese la unidad de medida (ej. kg, unidad, manojo): ")
-    precio = leer_entero_positivo("Ingrese el precio unitario entero (> 0, sin decimales): ")
-    stock_minimo = leer_entero_no_negativo("Ingrese el stock mínimo (>= 0, sin decimales): ")
+    categoria = leer_texto("Ingrese la categoría: ")
+    unidad = leer_texto("Ingrese la unidad de medida: ")
+    precio = leer_entero_positivo("Ingrese el precio unitario entero: ")
+    stock_minimo = leer_entero_no_negativo("Ingrese el stock mínimo : ")
 
     nuevo_producto = {
         "codigo": codigo,
@@ -165,7 +165,8 @@ def registrar_producto(productos):
 
     productos.append(nuevo_producto)
     guardar_datos_json(RUTAS_ARCHIVOS["productos"], productos)
-    print(f"\n[✓] Producto '{nombre}' ({codigo}) registrado correctamente.")
+    print(f"\n Producto registrado correctamente.")
+
 
 
 def listar_productos(productos):
@@ -184,7 +185,7 @@ def listar_productos(productos):
     solo_activos = True
 
     if opcion == "2":
-        filtro = input("Ingrese texto a buscar (código o parte del nombre): ").strip().lower()
+        filtro = input("Ingrese el codigo o el nombre: ").strip().lower()
     elif opcion == "3":
         solo_activos = False
 
