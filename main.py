@@ -41,7 +41,7 @@ def guardar_todo(datos):
     """Guarda todas las colecciones en sus respectivos archivos JSON."""
     for clave, ruta in RUTAS_ARCHIVOS.items():
         guardar_datos_json(ruta, datos[clave])
-    print("\n[✓] Todos los datos han sido guardados exitosamente en data/")
+    print("\n Todos los datos han sido guardados exitosamente en data/")
 
 
 # ==============================================================================
@@ -64,9 +64,9 @@ def leer_entero_positivo(mensaje):
             num = int(valor)
             if num > 0:
                 return num
-            print("Error: Debe ingresar un valor entero mayor a 0.")
+            print("Error: Debe ingresar un valor.")
         except ValueError:
-            print("Error: Ingrese un valor entero válido (sin decimales).")
+            print("Error: Ingrese un valor entero válido.")
 
 
 def leer_entero_no_negativo(mensaje):
@@ -79,7 +79,7 @@ def leer_entero_no_negativo(mensaje):
                 return num
             print("Error: El valor no puede ser negativo.")
         except ValueError:
-            print("Error: Ingrese un valor entero válido (sin decimales).")
+            print("Error: Ingrese un valor entero válido.")
 
 
 def leer_numero_positivo(mensaje):
@@ -90,7 +90,7 @@ def leer_numero_positivo(mensaje):
             num = float(valor)
             if num > 0:
                 return num
-            print("Error: Debe ingresar un valor mayor a 0.")
+            print("Error: Debe ingresar un valor.")
         except ValueError:
             print("Error: Por favor ingrese un número válido.")
 
@@ -103,11 +103,11 @@ def leer_fecha_ddmmyyyy(mensaje):
             fecha_dt = datetime.strptime(fecha_str, "%d/%m/%Y")
             return fecha_dt.strftime("%d/%m/%Y")
         except ValueError:
-            print("Error: La fecha debe tener el formato dd/mm/aaaa (ejemplo: 15/08/2026).")
+            print("Error: La fecha debe tener el formato dd/mm/aaaa.")
 
 
 def generar_id_secuencial(coleccion, prefijo, campo_id):
-    """Genera IDs secuenciales tipo M0001, V0001 o L001."""
+    """Genera IDs secuenciales tipo M001, V001 o L001."""
     if not coleccion:
         return f"{prefijo}001"
     
@@ -152,17 +152,17 @@ def registrar_producto(productos):
     print("\n--- Registrar Nuevo Producto ---")
     
     while True:
-        codigo = leer_texto("Ingrese el código del producto (ej. P001): ").upper()
+        codigo = leer_texto("Ingrese el código del producto ").upper()
         if buscar_producto_por_codigo(productos, codigo):
             print(f"Error: El código '{codigo}' ya está registrado (PF001). Intente con otro.")
         else:
             break
 
     nombre = leer_texto("Ingrese el nombre del producto: ")
-    categoria = leer_texto("Ingrese la categoría (ej. Hortalizas, Frutas): ")
+    categoria = leer_texto("Ingrese la categoría: ")
     unidad = leer_texto("Ingrese la unidad de medida (ej. kg, unidad, manojo): ")
-    precio = leer_entero_positivo("Ingrese el precio unitario entero (> 0, sin decimales): ")
-    stock_minimo = leer_entero_no_negativo("Ingrese el stock mínimo (>= 0, sin decimales): ")
+    precio = leer_entero_positivo("Ingrese el precio unitario: ")
+    stock_minimo = leer_entero_no_negativo("Ingrese el stock mínimo: ")
 
     nuevo_producto = {
         "codigo": codigo,
@@ -191,14 +191,14 @@ def listar_productos(datos):
     print("\n--- Opciones de Consulta ---")
     print("1. Ver todos los productos activos")
     print("2. Buscar producto por código o nombre")
-    print("3. Ver todos los productos (incluye inactivos)")
+    print("3. Ver todos los productos")
     opcion = input("Seleccione una opción: ").strip()
 
     filtro = ""
     solo_activos = True
 
     if opcion == "2":
-        filtro = input("Ingrese texto a buscar (código o parte del nombre): ").strip().lower()
+        filtro = input("Ingrese codigo o nombre: ").strip().lower()
     elif opcion == "3":
         solo_activos = False
 
@@ -360,7 +360,7 @@ def registrar_lote(datos):
     print(f"ID asignado al lote: {id_lote}")
 
     fecha_siembra = leer_fecha_ddmmyyyy("Ingrese la fecha de siembra (dd/mm/aaaa): ")
-    area_m2 = leer_numero_positivo("Ingrese el área en m² (> 0): ")
+    area_m2 = leer_numero_positivo("Ingrese el área en m²: ")
 
     nuevo_lote = {
         "id_lote": id_lote,
@@ -448,7 +448,7 @@ def cambiar_estado_lote(lotes):
         return
 
     guardar_datos_json(RUTAS_ARCHIVOS["lotes"], lotes)
-    print(f"\n[✓] Estado del lote '{id_lote}' cambiado a '{lote['estado']}'.")
+    print(f"\n Estado del lote '{id_lote}' cambiado a '{lote['estado']}'.")
 
 
 def listar_lotes(lotes):
@@ -493,7 +493,7 @@ def menu_lotes(datos):
 
 
 # ==============================================================================
-# MÓDULO: MOVIMIENTOS DE INVENTARIO (ETAPA 5)
+# MÓDULO: MOVIMIENTOS DE INVENTARIO
 # ==============================================================================
 def registrar_entrada_inventario(datos):
     """RF08: Registrar entradas manuales de inventario con motivo obligatorio."""
@@ -509,7 +509,7 @@ def registrar_entrada_inventario(datos):
         print(f"Error: El producto '{prod['nombre']}' está deshabilitado/inactivo.")
         return
 
-    cantidad = leer_entero_positivo("Ingrese la cantidad a ingresar (entero > 0): ")
+    cantidad = leer_entero_positivo("Ingrese la cantidad a ingresar: ")
     motivo = leer_texto("Ingrese el motivo obligatorio de la entrada: ")
     fecha_mov = datetime.now().strftime("%d/%m/%Y %H:%M")
 
@@ -526,7 +526,7 @@ def registrar_entrada_inventario(datos):
 
     datos["movimientos"].append(nuevo_movimiento)
     guardar_datos_json(RUTAS_ARCHIVOS["movimientos"], datos["movimientos"])
-    print(f"\n[✓] Entrada {id_mov} registrada correctamente para '{prod['nombre']}'.")
+    print(f"\n Entrada {id_mov} registrada correctamente para '{prod['nombre']}'.")
 
 
 def registrar_salida_inventario(datos):
@@ -544,7 +544,6 @@ def registrar_salida_inventario(datos):
 
     cantidad = leer_entero_positivo("Ingrese la cantidad a retirar (entero > 0): ")
 
-    # Validación estricta RF09 / PF005
     if cantidad > stock_disponible:
         print(f"Error (PF005): Operación denegada. El stock disponible ({stock_disponible:,}) es insuficiente para retirar {cantidad:,} unidades.")
         return
@@ -606,6 +605,114 @@ def menu_inventario(datos):
 
 
 # ==============================================================================
+# MÓDULO: REGISTRO Y CONSULTA DE VENTAS (ETAPA 6)
+# ==============================================================================
+def registrar_venta(datos):
+    """RF10 y RF11: Registrar ventas con stock suficiente y generación automática de salidas."""
+    print("\n--- Registrar Venta ---")
+    cliente = leer_texto("Nombre del cliente: ")
+
+    items_venta = []
+    total_venta = 0
+
+    while True:
+        codigo_prod = leer_texto("Ingrese código del producto (o 'FIN' para procesar la venta): ").upper()
+        if codigo_prod == "FIN":
+            if not items_venta:
+                print("No ha agregado productos a la venta. Operación cancelada.")
+                return
+            break
+
+        prod = buscar_producto_por_codigo(datos["productos"], codigo_prod)
+        if not prod:
+            print(f"Error: El producto con código '{codigo_prod}' no existe.")
+            continue
+
+        if not prod.get("activo", True):
+            print(f"Error: El producto '{prod['nombre']}' ({codigo_prod}) está deshabilitado.")
+            continue
+
+        stock_disponible = calcular_stock_producto(datos["movimientos"], codigo_prod)
+        
+        # Descontar del stock temporal lo que ya se agregó al carrito en esta misma venta
+        ya_agregado = sum(item["cantidad"] for item in items_venta if item["producto_codigo"] == codigo_prod)
+        stock_efectivo = stock_disponible - ya_agregado
+
+        print(f"Producto: {prod['nombre']} | Precio: ${prod['precio']:,} | Stock disponible: {stock_efectivo:,}")
+
+        if stock_efectivo <= 0:
+            print(f"Error (PF005): No hay stock disponible para '{prod['nombre']}'.")
+            continue
+
+        cantidad = leer_entero_positivo("Cantidad a vender: ")
+
+        if cantidad > stock_efectivo:
+            print(f"Error (PF005): Stock insuficiente. Disponible para venta: {stock_efectivo:,} unidades.")
+            continue
+
+        subtotal = cantidad * prod["precio"]
+        total_venta += subtotal
+
+        items_venta.append({
+            "producto_codigo": codigo_prod,
+            "nombre": prod["nombre"],
+            "cantidad": cantidad,
+            "precio_unitario": prod["precio"],
+            "subtotal": subtotal
+        })
+
+        print(f" Agregado: {cantidad}x {prod['nombre']} - Subtotal: ${subtotal:,}")
+
+    id_venta = generar_id_secuencial(datos["ventas"], "V", "id_venta")
+    fecha_venta = datetime.now().strftime("%d/%m/%Y %H:%M")
+
+    # Registrar venta completa
+    nueva_venta = {
+        "id_venta": id_venta,
+        "cliente": cliente,
+        "fecha": fecha_venta,
+        "items": items_venta,
+        "total": total_venta
+    }
+
+    datos["ventas"].append(nueva_venta)
+
+    # Generar salidas automáticas de inventario
+    for item in items_venta:
+        id_mov = generar_id_secuencial(datos["movimientos"], "M", "id")
+        nuevo_movimiento = {
+            "id": id_mov,
+            "producto_codigo": item["producto_codigo"],
+            "tipo": "SALIDA",
+            "cantidad": item["cantidad"],
+            "motivo": f"Venta {id_venta}",
+            "fecha": fecha_venta
+        }
+        datos["movimientos"].append(nuevo_movimiento)
+
+    guardar_datos_json(RUTAS_ARCHIVOS["ventas"], datos["ventas"])
+    guardar_datos_json(RUTAS_ARCHIVOS["movimientos"], datos["movimientos"])
+
+    print(f"\n Venta {id_venta} registrada exitosamente a nombre de '{cliente}'.")
+    print(f" Total cobrado: ${total_venta:,}")
+
+
+def consultar_ventas(ventas):
+    """Consulta general y detallada de ventas registradas."""
+    if not ventas:
+        print("\nNo existen ventas registradas en el sistema.")
+        return
+
+    print("\n" + "="*70)
+    print(f"{'FOLIO':<8} | {'FECHA':<16} | {'CLIENTE':<25} | {'TOTAL'}")
+    print("="*70)
+    for v in ventas:
+        total_fmt = f"${v['total']:,}".replace(",", ".")
+        print(f"{v['id_venta']:<8} | {v['fecha']:<16} | {v['cliente']:<25} | {total_fmt}")
+    print("="*70)
+
+
+# ==============================================================================
 # MENÚ PRINCIPAL Y CONTROL DE FLUJO
 # ==============================================================================
 def mostrar_menu():
@@ -642,9 +749,9 @@ def main():
         elif opcion == "3":
             menu_inventario(datos)
         elif opcion == "4":
-            print("\n[Módulo en construcción: Registrar venta]")
+            registrar_venta(datos)
         elif opcion == "5":
-            print("\n[Módulo en construcción: Consultar ventas]")
+            consultar_ventas(datos["ventas"])
         elif opcion == "6":
             print("\n[Módulo en construcción: Alertas de stock]")
         elif opcion == "7":
