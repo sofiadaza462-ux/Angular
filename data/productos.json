@@ -1,0 +1,38 @@
+[
+    {
+        "codigo": "P001",
+        "nombre": "Arroz",
+        "categoria": "Granos",
+        "unidad": "kg",
+        "precio": 3000,
+        "stock_minimo": 20,
+        "activo": true
+    },
+    {
+        "codigo": "P002",
+        "nombre": "Aguacate",
+        "categoria": "Verduras",
+        "unidad": "unidad",
+        "precio": 5.5,
+        "stock_minimo": 18,
+        "activo": false
+    },
+    {
+        "codigo": "P003",
+        "nombre": "Leche",
+        "categoria": "Lacteos",
+        "unidad": "litros",
+        "precio": 2800,
+        "stock_minimo": 56,
+        "activo": true
+    },
+    {
+        "codigo": "P004",
+        "nombre": "Huevos",
+        "categoria": "Alimento",
+        "unidad": "Docena",
+        "precio": 500,
+        "stock_minimo": 144,
+        "activo": true
+    }
+]

@@ -1,0 +1,34 @@
+[
+    {
+        "id_lote": "L001",
+        "producto_codigo": "P001",
+        "fecha_siembra": "20/02/2026",
+        "area_m2": 60.0,
+        "cantidad_producida": 45,
+        "estado": "COSECHADO"
+    },
+    {
+        "id_lote": "L002",
+        "producto_codigo": "P003",
+        "fecha_siembra": "10/09/2026",
+        "area_m2": 120.0,
+        "cantidad_producida": 0,
+        "estado": "EN_PRODUCCION"
+    },
+    {
+        "id_lote": "L004",
+        "producto_codigo": "P002",
+        "fecha_siembra": "15/02/2026",
+        "area_m2": 17.0,
+        "cantidad_producida": 58,
+        "estado": "COSECHADO"
+    },
+    {
+        "id_lote": "L005",
+        "producto_codigo": "P002",
+        "fecha_siembra": "03/12/2026",
+        "area_m2": 57.0,
+        "cantidad_producida": 0,
+        "estado": "EN_PRODUCCION"
+    }
+]

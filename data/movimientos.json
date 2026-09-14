@@ -1,0 +1,50 @@
+[
+    {
+        "id": "M001",
+        "producto_codigo": "P001",
+        "tipo": "ENTRADA",
+        "cantidad": 45,
+        "motivo": "Cosecha lote L001",
+        "fecha": "10/09/2026 17:39"
+    },
+    {
+        "id": "M002",
+        "producto_codigo": "P002",
+        "tipo": "ENTRADA",
+        "cantidad": 58,
+        "motivo": "Cosecha lote L004",
+        "fecha": "11/09/2026 18:58"
+    },
+    {
+        "id": "M003",
+        "producto_codigo": "P001",
+        "tipo": "ENTRADA",
+        "cantidad": 8,
+        "motivo": "llegaron nuevos productos",
+        "fecha": "14/09/2026 14:11"
+    },
+    {
+        "id": "M004",
+        "producto_codigo": "P001",
+        "tipo": "ENTRADA",
+        "cantidad": 6,
+        "motivo": "sdfgbnbvcx",
+        "fecha": "14/09/2026 14:11"
+    },
+    {
+        "id": "M005",
+        "producto_codigo": "P001",
+        "tipo": "SALIDA",
+        "cantidad": 4,
+        "motivo": "Venta V001",
+        "fecha": "14/09/2026 14:13"
+    },
+    {
+        "id": "M006",
+        "producto_codigo": "P001",
+        "tipo": "SALIDA",
+        "cantidad": 3,
+        "motivo": "Venta V002",
+        "fecha": "14/09/2026 14:16"
+    }
+]

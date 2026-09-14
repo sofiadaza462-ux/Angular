@@ -1,0 +1,32 @@
+[
+    {
+        "id_venta": "V001",
+        "cliente": "alisson",
+        "fecha": "14/09/2026 14:13",
+        "items": [
+            {
+                "producto_codigo": "P001",
+                "nombre": "Arroz",
+                "cantidad": 4,
+                "precio_unitario": 3000,
+                "subtotal": 12000
+            }
+        ],
+        "total": 12000
+    },
+    {
+        "id_venta": "V002",
+        "cliente": "sofia",
+        "fecha": "14/09/2026 14:16",
+        "items": [
+            {
+                "producto_codigo": "P001",
+                "nombre": "Arroz",
+                "cantidad": 3,
+                "precio_unitario": 3000,
+                "subtotal": 9000
+            }
+        ],
+        "total": 9000
+    }
+]
