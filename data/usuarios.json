@@ -1,0 +1,14 @@
+[
+    {
+        "usuario": "admin",
+        "contrasena": "admin123",
+        "rol": "ADMINISTRADOR",
+        "activo": true
+    },
+    {
+        "usuario": "operador",
+        "contrasena": "operador123",
+        "rol": "OPERADOR",
+        "activo": true
+    }
+]
