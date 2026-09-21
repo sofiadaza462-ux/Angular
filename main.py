@@ -17,13 +17,16 @@ RUTAS_ARCHIVOS = {
     "usuarios": os.path.join(BASE_DIR, "data", "usuarios.json"),
 }
 
+
 # Lee la información guardada
 def cargar_datos_json(ruta):
     if not os.path.exists(ruta):
         return []
+
     try:
         with open(ruta, "r", encoding="utf-8") as archivo:
             return json.load(archivo)
+
     except (json.JSONDecodeError, OSError):
         print(f"Advertencia: No se pudo leer {ruta}. Se iniciará con lista vacía.")
         return []
@@ -34,7 +37,9 @@ def guardar_datos_json(ruta, datos):
     try:
         with open(ruta, "w", encoding="utf-8") as archivo:
             json.dump(datos, archivo, indent=4, ensure_ascii=False)
+
         return True
+
     except OSError as e:
         print(f"Error al guardar en {ruta}: {e}")
         return False
@@ -43,8 +48,10 @@ def guardar_datos_json(ruta, datos):
 # Guarda todos los datos
 def guardar_todo(datos):
     for clave, ruta in RUTAS_ARCHIVOS.items():
+
         if clave != "usuarios":
             guardar_datos_json(ruta, datos[clave])
+
     print("\n Todos los datos han sido guardados exitosamente en data/")
 
 
@@ -52,8 +59,10 @@ def guardar_todo(datos):
 def leer_texto(mensaje):
     while True:
         valor = input(mensaje).strip()
+
         if valor:
             return valor
+
         print("Error: El campo no puede estar vacío. Intente de nuevo.")
 
 
@@ -61,11 +70,15 @@ def leer_texto(mensaje):
 def leer_entero_positivo(mensaje):
     while True:
         valor = input(mensaje).strip()
+
         try:
             num = int(valor)
+
             if num > 0:
                 return num
+
             print("Error: Debe ingresar un valor.")
+
         except ValueError:
             print("Error: Ingrese un valor entero válido .")
 
@@ -74,11 +87,15 @@ def leer_entero_positivo(mensaje):
 def leer_entero_no_negativo(mensaje):
     while True:
         valor = input(mensaje).strip()
+
         try:
             num = int(valor)
+
             if num >= 0:
                 return num
+
             print("Error: El valor no puede ser negativo.")
+
         except ValueError:
             print("Error: Ingrese un valor.")
 
@@ -87,11 +104,15 @@ def leer_entero_no_negativo(mensaje):
 def leer_numero_positivo(mensaje):
     while True:
         valor = input(mensaje).strip()
+
         try:
             num = float(valor)
+
             if num > 0:
                 return num
+
             print("Error: Debe ingresar un valor mayor a 0.")
+
         except ValueError:
             print("Error: Por favor ingrese un número válido.")
 
@@ -100,9 +121,11 @@ def leer_numero_positivo(mensaje):
 def leer_fecha_ddmmyyyy(mensaje):
     while True:
         fecha_str = input(mensaje).strip()
+
         try:
             fecha_dt = datetime.strptime(fecha_str, "%d/%m/%Y")
             return fecha_dt.strftime("%d/%m/%Y")
+
         except ValueError:
             print("Error: La fecha debe tener el formato dd/mm/aaaa.")
 
@@ -118,6 +141,7 @@ def generar_id_secuencial(coleccion, prefijo, campo_id):
         id_str = item.get(campo_id, "")
 
         if id_str.startswith(prefijo):
+
             try:
                 num = int(id_str[len(prefijo):])
 
@@ -156,6 +180,7 @@ def buscar_producto_por_codigo(productos, codigo):
     codigo_upper = codigo.upper()
 
     for prod in productos:
+
         if prod["codigo"].upper() == codigo_upper:
             return prod
 
@@ -165,6 +190,7 @@ def buscar_producto_por_codigo(productos, codigo):
 # Busca un usuario
 def buscar_usuario(usuarios, usuario):
     for u in usuarios:
+
         if u.get("usuario", "").lower() == usuario.lower():
             return u
 
@@ -176,10 +202,14 @@ def iniciar_sesion(usuarios):
     print("\n==================== INICIO DE SESIÓN ====================")
 
     for intento in range(3):
+
         usuario = input("Usuario: ").strip()
         contrasena = getpass("Contraseña: ")
 
-        datos_usuario = buscar_usuario(usuarios, usuario)
+        datos_usuario = buscar_usuario(
+            usuarios,
+            usuario
+        )
 
         if datos_usuario and datos_usuario.get("contrasena") == contrasena:
 
@@ -195,6 +225,7 @@ def iniciar_sesion(usuarios):
         print("Error: Usuario o contraseña incorrectos.")
 
     print("Error: Se superó el número máximo de intentos.")
+
     return None
 
 
@@ -203,18 +234,40 @@ def registrar_producto(productos):
     print("\nRegistrar Nuevo Producto ")
 
     while True:
-        codigo = leer_texto("Ingrese el código del producto (ej. P001): ").upper()
+
+        codigo = leer_texto(
+            "Ingrese el código del producto (ej. P001): "
+        ).upper()
 
         if buscar_producto_por_codigo(productos, codigo):
-            print(f"Error: El código '{codigo}' ya está registrado. Intente con otro.")
+
+            print(
+                f"Error: El código '{codigo}' ya está registrado. "
+                f"Intente con otro."
+            )
+
         else:
             break
 
-    nombre = leer_texto("Ingrese el nombre del producto: ")
-    categoria = leer_texto("Ingrese la categoría: ")
-    unidad = leer_texto("Ingrese la unidad de medida: ")
-    precio = leer_entero_positivo("Ingrese el precio unitario: ")
-    stock_minimo = leer_entero_no_negativo("Ingrese el stock mínimo: ")
+    nombre = leer_texto(
+        "Ingrese el nombre del producto: "
+    )
+
+    categoria = leer_texto(
+        "Ingrese la categoría: "
+    )
+
+    unidad = leer_texto(
+        "Ingrese la unidad de medida: "
+    )
+
+    precio = leer_entero_positivo(
+        "Ingrese el precio unitario: "
+    )
+
+    stock_minimo = leer_entero_no_negativo(
+        "Ingrese el stock mínimo: "
+    )
 
     nuevo_producto = {
         "codigo": codigo,
@@ -233,7 +286,9 @@ def registrar_producto(productos):
         productos
     )
 
-    print(f"\n Producto '{nombre}' ({codigo}) registrado correctamente.")
+    print(
+        f"\n Producto '{nombre}' ({codigo}) registrado correctamente."
+    )
 
 
 # Lista los productos
@@ -250,12 +305,15 @@ def listar_productos(datos):
     print("2. Buscar producto por código o nombre")
     print("3. Ver todos los productos (incluye inactivos)")
 
-    opcion = input("Seleccione una opción: ").strip()
+    opcion = input(
+        "Seleccione una opción: "
+    ).strip()
 
     filtro = ""
     solo_activos = True
 
     if opcion == "2":
+
         filtro = input(
             "Ingrese texto a buscar código o parte del nombre: "
         ).strip().lower()
@@ -271,6 +329,7 @@ def listar_productos(datos):
             continue
 
         if filtro:
+
             codigo_match = filtro in p["codigo"].lower()
             nombre_match = filtro in p["nombre"].lower()
 
@@ -280,7 +339,9 @@ def listar_productos(datos):
         resultados.append(p)
 
     if not resultados:
-        print("\nNo se encontraron productos con los criterios especificados.")
+        print(
+            "\nNo se encontraron productos con los criterios especificados."
+        )
         return
 
     print("\n" + "=" * 95)
@@ -294,7 +355,11 @@ def listar_productos(datos):
 
     for p in resultados:
 
-        estado = "Activo" if p.get("activo", True) else "Inactivo"
+        estado = (
+            "Activo"
+            if p.get("activo", True)
+            else "Inactivo"
+        )
 
         precio_fmt = f"${p['precio']:,}".replace(",", ".")
 
@@ -307,9 +372,13 @@ def listar_productos(datos):
         stock_min_fmt = f"{p['stock_minimo']:,}".replace(",", ".")
 
         print(
-            f"{p['codigo']:<8} | {p['nombre']:<20} | "
-            f"{p['categoria']:<13} | {precio_fmt:<10} | "
-            f"{stock_act_fmt:<10} | {stock_min_fmt:<6} | {estado}"
+            f"{p['codigo']:<8} | "
+            f"{p['nombre']:<20} | "
+            f"{p['categoria']:<13} | "
+            f"{precio_fmt:<10} | "
+            f"{stock_act_fmt:<10} | "
+            f"{stock_min_fmt:<6} | "
+            f"{estado}"
         )
 
     print("=" * 95)
@@ -323,7 +392,10 @@ def actualizar_producto(productos):
         "Ingrese el código del producto a actualizar: "
     ).strip().upper()
 
-    producto = buscar_producto_por_codigo(productos, codigo)
+    producto = buscar_producto_por_codigo(
+        productos,
+        codigo
+    )
 
     if not producto:
         print(
@@ -400,7 +472,9 @@ def actualizar_producto(productos):
         productos
     )
 
-    print(f"\n Producto '{codigo}' actualizado exitosamente.")
+    print(
+        f"\n Producto '{codigo}' actualizado exitosamente."
+    )
 
 
 # Desactiva un producto
@@ -411,7 +485,10 @@ def desactivar_producto(productos):
         "Ingrese el código del producto a desactivar: "
     ).strip().upper()
 
-    producto = buscar_producto_por_codigo(productos, codigo)
+    producto = buscar_producto_por_codigo(
+        productos,
+        codigo
+    )
 
     if not producto:
         print(
@@ -463,22 +540,30 @@ def menu_productos(datos):
         ).strip()
 
         if opcion == "1":
-            registrar_producto(datos["productos"])
+            registrar_producto(
+                datos["productos"]
+            )
 
         elif opcion == "2":
             listar_productos(datos)
 
         elif opcion == "3":
-            actualizar_producto(datos["productos"])
+            actualizar_producto(
+                datos["productos"]
+            )
 
         elif opcion == "4":
-            desactivar_producto(datos["productos"])
+            desactivar_producto(
+                datos["productos"]
+            )
 
         elif opcion == "0":
             break
 
         else:
-            print("Opción inválida. Intente de nuevo.")
+            print(
+                "Opción inválida. Intente de nuevo."
+            )
 
 
 # Busca un lote
@@ -526,7 +611,9 @@ def registrar_lote(datos):
         "id_lote"
     )
 
-    print(f"ID asignado al lote: {id_lote}")
+    print(
+        f"ID asignado al lote: {id_lote}"
+    )
 
     fecha_siembra = leer_fecha_ddmmyyyy(
         "Ingrese la fecha de siembra (dd/mm/aaaa): "
@@ -545,7 +632,9 @@ def registrar_lote(datos):
         "estado": "EN_PRODUCCION"
     }
 
-    datos["lotes"].append(nuevo_lote)
+    datos["lotes"].append(
+        nuevo_lote
+    )
 
     guardar_datos_json(
         RUTAS_ARCHIVOS["lotes"],
@@ -617,7 +706,9 @@ def cosechar_lote(datos):
         "fecha": fecha_cosecha
     }
 
-    datos["movimientos"].append(nuevo_movimiento)
+    datos["movimientos"].append(
+        nuevo_movimiento
+    )
 
     guardar_datos_json(
         RUTAS_ARCHIVOS["lotes"],
@@ -755,10 +846,14 @@ def menu_lotes(datos):
             cosechar_lote(datos)
 
         elif opcion == "3":
-            cambiar_estado_lote(datos["lotes"])
+            cambiar_estado_lote(
+                datos["lotes"]
+            )
 
         elif opcion == "4":
-            listar_lotes(datos["lotes"])
+            listar_lotes(
+                datos["lotes"]
+            )
 
         elif opcion == "0":
             break
@@ -1356,6 +1451,7 @@ def generar_reportes(datos):
             cant = item["cantidad"]
 
             if cod not in acumulado_por_producto:
+
                 acumulado_por_producto[cod] = {
                     "nombre": nom,
                     "cantidad": 0
@@ -1460,7 +1556,9 @@ def ventas_por_fecha(datos):
     )
 
     if inicio > fin:
-        print("Error: La fecha inicial no puede ser mayor que la fecha final.")
+        print(
+            "Error: La fecha inicial no puede ser mayor que la fecha final."
+        )
         return
 
     resultados = []
@@ -1662,12 +1760,77 @@ def registrar_devolucion(datos):
     )
 
     print(
-        f"\nDevolución registrada correctamente."
+        "\nDevolución registrada correctamente."
     )
 
     print(
         f"Se agregaron {cantidad} unidades al inventario."
     )
+
+
+# Reto: muestra productos con mayor rotación
+def productos_mayor_rotacion(datos):
+    print("\n PRODUCTOS CON MAYOR ROTACIÓN")
+
+    ventas = datos["ventas"]
+
+    if not ventas:
+        print(
+            "\nNo existen ventas registradas en el sistema."
+        )
+        return
+
+    rotacion = {}
+
+    for venta in ventas:
+
+        for item in venta.get("items", []):
+
+            codigo = item["producto_codigo"]
+            nombre = item["nombre"]
+            cantidad = item["cantidad"]
+
+            if codigo not in rotacion:
+
+                rotacion[codigo] = {
+                    "nombre": nombre,
+                    "cantidad": 0
+                }
+
+            rotacion[codigo]["cantidad"] += cantidad
+
+    productos = sorted(
+        rotacion.items(),
+        key=lambda x: x[1]["cantidad"],
+        reverse=True
+    )
+
+    print("\n" + "=" * 70)
+
+    print(
+        f"{'POSICIÓN':<10} | "
+        f"{'CÓDIGO':<10} | "
+        f"{'PRODUCTO':<20} | "
+        f"{'VENDIDO'}"
+    )
+
+    print("=" * 70)
+
+    for posicion, (codigo, info) in enumerate(
+        productos,
+        start=1
+    ):
+
+        cantidad = f"{info['cantidad']:,}".replace(",", ".")
+
+        print(
+            f"{posicion:<10} | "
+            f"{codigo:<10} | "
+            f"{info['nombre']:<20} | "
+            f"{cantidad} unidades"
+        )
+
+    print("=" * 70)
 
 
 # Reto: exporta inventario a CSV
@@ -1738,7 +1901,7 @@ def exportar_inventario_csv(datos):
         )
 
 
-# Reto: crea copias de los JSON
+# Reto: crea copias de seguridad
 def crear_copias_seguridad(datos):
     fecha = datetime.now().strftime(
         "%Y%m%d_%H%M%S"
@@ -1756,11 +1919,9 @@ def crear_copias_seguridad(datos):
 
         nombre = os.path.basename(ruta)
 
-        nombre_backup = (
-            nombre.replace(
-                ".json",
-                f"_backup_{fecha}.json"
-            )
+        nombre_backup = nombre.replace(
+            ".json",
+            f"_backup_{fecha}.json"
         )
 
         ruta_backup = os.path.join(
@@ -1796,6 +1957,7 @@ def menu_retos(datos):
         print("3. Registrar devolución")
         print("4. Exportar inventario a CSV")
         print("5. Crear copias de seguridad")
+        print("6. Ver productos con mayor rotación")
         print("0. Volver al menú principal")
 
         opcion = input(
@@ -1816,6 +1978,9 @@ def menu_retos(datos):
 
         elif opcion == "5":
             crear_copias_seguridad(datos)
+
+        elif opcion == "6":
+            productos_mayor_rotacion(datos)
 
         elif opcion == "0":
             break
