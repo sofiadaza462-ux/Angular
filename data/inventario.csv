@@ -1,0 +1,9 @@
+﻿Código;Nombre;Categoría;Unidad;Precio;Stock actual;Stock mínimo;Estado
+P001;Arroz;Granos;kg;3000;100;20;Activo
+P002;Aguacate;Verduras;unidad;5.5;58;18;Inactivo
+P003;Leche;Lacteos;70;2800;20;60;Activo
+P004;Huevos;Alimento;4;500;395;50;Inactivo
+P005;pan;comida;u;2000;50;5;Activo
+P006;pescado;comida;KL;8000;40;10;Activo
+P007;papel;aseo;rollos;2500;10;10;Activo
+P008;carne;carnicos;Libras;15000;200;20;Activo
